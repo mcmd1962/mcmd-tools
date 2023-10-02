@@ -1,0 +1,72 @@
+
+This tool compares the magics of all files as found in the directory and compare to this to the config. It will report deviations from this.
+The config is a JSON file which can be initially be generated from the targetted files. An example is the following:
+
+   {
+      "suffixes": {
+         "": {
+               "comment--00": "#=00001  20231002-20231002 - ALL MAGICS",
+               "comment--01": "#=00001  20231002-20231002 - ASCII text",
+               "expected-result": [
+                  "ASCII text"
+               ]
+         },
+         "exe": {
+               "comment-exe-00": "#=01016  19910712-20230125 - ALL MAGICS",
+               "comment-exe-01": "#=00027  19910712-20050925 - MS-DOS executable",
+               "comment-exe-02": "#=00912  19971223-20230125 - PE32 executable",
+               "comment-exe-03": "#=00077  20110508-20230125 - PE32+ executable",
+               "expected-result": [
+                   "MS-DOS executable",
+                   "PE32 executable",
+                   "PE32+ executable"
+               ]
+         },
+         "py": {
+               "comment-py-00": "#=00001  20231002-20231002 - ALL MAGICS",
+               "comment-py-01": "#=00001  20231002-20231002 - Python script",
+               "expected-result": [
+                  "Python script"
+               ]
+         },
+         "txt": {
+               "comment-txt-00": "#=00001  20231002-20231002 - ALL MAGICS",
+               "comment-txt-01": "#=00001  20231002-20231002 - ASCII text",
+               "expected-result": [
+                  "ASCII text"
+               ]
+         }
+      }
+   }
+
+What you see in the generated config is:
+- Per suffix a section
+- "comments" in the JSON file gives information:
+  . the -00 comment is for all files with that suffix: How many files were processed (e.g. 1016 for ".exe" files), the date of the oldest file (19910712), the newest file (20230125)
+  . all other comments are related to a specific found magic
+- the "expected-result" list is the accepted magics for the suffix.
+
+Advise is to initially generate the config and then correct the results. Especially you have to pay attention to the following magics:
+- the "executable" magics (e.g. "PE32 executable"). A word document should not have this magic
+- the "data" magic. This is the catch all magic. Again, a word document should not have this magic.
+Check all relevant suffixes which are important to you!
+
+Procedure
+=========
+1. Create a virtual environment and install python-magic into this. For DARWIN, see below for an extra step to take
+2. Generate the initial config:
+   python check_file_magics.py  --directory $PWD  --generate-config-file /tmp/check_file_magics.json
+3. When necessary, create an exception file (try to solve exceptions in another way):
+   python check_file_magics.py  --directory $PWD  --config-file /tmp/check_file_magics.json --generate-exceptions-file /tmp/check_file_magics.exceptions
+4. Run the tool and check the expected magics:
+   python check_file_magics.py  --directory $PWD  --config-file /tmp/check_file_magics.json --exceptions-file /tmp/check_file_magics.exceptions
+   or
+   python check_file_magics.py  --directory $PWD  --config-file /tmp/check_file_magics.json --exceptions-file /tmp/check_file_magics.exceptions --summary  
+
+
+DARWIN
+------
+Install libmagic, e.g. with the following command:
+   brew install libmagic
+
+
