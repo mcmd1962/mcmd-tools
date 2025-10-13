@@ -38,10 +38,10 @@ except:
     HAS_PYZBAR = False
 
 
-__author__ = "MCMD"
-__copyright__ = "Copyright 2025"
-__license__ = "MIT"
-__version__ = "2025-10.01"
+__author__ = 'MCMD'
+__copyright__ = 'Copyright 2025'
+__license__ = 'MIT'
+__version__ = '2025-10.06'
 
 
 class CustomFormatter(logging.Formatter):
@@ -49,14 +49,14 @@ class CustomFormatter(logging.Formatter):
     logging
     """
 
-    grey = "\x1b[38;2;152;152;152m"
-    grey_background = grey.replace("38", "48")
-    white = "\x1b[38;2;224;242;224m"
-    yellow = "\x1b[33;20m"
-    red = "\x1b[31;20m"
-    bold_red = "\x1b[31;1m"
-    reset = "\x1b[0m"
-    msg_format = "%(message)s"
+    grey = '\x1b[38;2;152;152;152m'
+    grey_background = grey.replace('38', '48')
+    white = '\x1b[38;2;224;242;224m'
+    yellow = '\x1b[33;20m'
+    red = '\x1b[31;20m'
+    bold_red = '\x1b[31;1m'
+    reset = '\x1b[0m'
+    msg_format = '%(message)s'
 
     FORMATS = {
         logging.DEBUG: grey + msg_format + reset,
@@ -68,7 +68,7 @@ class CustomFormatter(logging.Formatter):
 
     def format(self, record):
         log_fmt = self.FORMATS.get(record.levelno)
-        formatter = logging.Formatter(log_fmt, "%H:%M:%S")
+        formatter = logging.Formatter(log_fmt, '%H:%M:%S')
         return formatter.format(record)
 
 
@@ -77,21 +77,12 @@ def get_arguments() -> argparse.Namespace:
     get commandline arguments
     """
     # Parse command line arguments
-    parser = argparse.ArgumentParser(
-        description="Shamir Secret Sharing arguments", epilog="© MCMD, 2025"
-    )
-    choices = ["debug", "info", "warning", "error", "critical"]
-    parser.add_argument(
-        "--log-level",
-        help="Set log level (default '%(default)s')",
-        choices=choices,
-        default="debug",
-    )
-    parser.add_argument(
-        "-V", "--version", action="version", version="%(prog)s " + __version__
-    )
+    parser = argparse.ArgumentParser(description='Shamir Secret Sharing arguments', epilog='© MCMD, 2025')
+    choices = ['debug', 'info', 'warning', 'error', 'critical']
+    parser.add_argument('--log-level', help="Set log level (default '%(default)s')", choices=choices, default='debug')
+    parser.add_argument('-V', '--version', action='version', version='%(prog)s ' + __version__)
 
-    sub = parser.add_subparsers(dest="cmd", required=True)
+    sub = parser.add_subparsers(dest='cmd', required=True)
 
     epilog = """
 
@@ -133,67 +124,29 @@ This has the following elements:
 
 
         """
-    p_split = sub.add_parser(
-        "split", formatter_class=argparse.RawDescriptionHelpFormatter, epilog=epilog
-    )
-    unique_name = f"ID.{random.randrange(2**24):X}"
+    p_split = sub.add_parser('split', formatter_class=argparse.RawDescriptionHelpFormatter, epilog=epilog)
+    unique_name = f'ID.{random.randrange(2**24):X}'
     p_split.add_argument(
-        "-n",
-        "--unique-name",
+        '-n',
+        '--unique-name',
         type=str,
         help="The pattern used for filenames when QR files are generated (default '%(default)s')",
         default=unique_name,
-        metavar="IDX",
+        metavar='IDX',
     )
-    p_split.add_argument("-S", "--secret", metavar="STRING")
-    p_split.add_argument("--secret-file", help="file with the secret", metavar="FILE")
-    p_split.add_argument(
-        "--keyboard-secret",
-        help="read the secret from the keyboard",
-        action="store_true",
-    )
-    p_split.add_argument("-t", "--threshold", type=int, required=True, metavar="INT")
-    p_split.add_argument("-s", "--shares", type=int, required=True, metavar="INT")
-    p_split.add_argument(
-        "--prime",
-        "-p",
-        type=int,
-        help="prime number used in algorithm, decimal type (no default)",
-        metavar="INT",
-    )
-    p_split.add_argument(
-        "--PRIME",
-        "-P",
-        type=str,
-        help="prime number used in algorithm, string type for hex value (no default)",
-        metavar="HEX-STR",
-    )
-    p_split.add_argument(
-        "--strength-level",
-        type=int,
-        help="minimum prime length in bits (default '%(default)s')",
-        default=255,
-        metavar="INT",
-    )
-    p_split.add_argument(
-        "--minimum-x-safe-prime",
-        type=int,
-        help="minimum safe prime for x-axis values (default '%(default)s')",
-        default=2**43,
-        metavar="INT",
-    )
-    p_split.add_argument(
-        "--use-small-primes",
-        help="Use the smallest possible prime for polynome",
-        action="store_true",
-    )
-    p_split.add_argument("--qr", help="Generate QR-code files", action="store_true")
-    p_split.add_argument(
-        "--strong", help="Strongest possible security", action="store_true"
-    )
-    p_split.add_argument(
-        "--showpoly", help="Show the polynome coëfficiënts", action="store_true"
-    )
+    p_split.add_argument('-S', '--secret', metavar='STRING')
+    p_split.add_argument('--secret-file', help='file with the secret', metavar='FILE')
+    p_split.add_argument('--keyboard-secret', help='read the secret from the keyboard', action='store_true')
+    p_split.add_argument('-t', '--threshold', type=int, required=True, metavar='INT')
+    p_split.add_argument('-s', '--shares', type=int, required=True, metavar='INT')
+    p_split.add_argument('--PRIME', '-P', type=int, help='prime number used in algorithm, decimal type (no default)', metavar='INT')
+    p_split.add_argument('--prime', '-p', type=str, help='prime number used in algorithm, string type for hex value (no default)', metavar='HEX-STR')
+    p_split.add_argument('--strength-level', type=int, help="minimum prime length in bits (default '%(default)s')", default=255, metavar='INT')
+    p_split.add_argument('--minimum-x-safe-prime', type=int, help="minimum safe prime for x-axis values (default '%(default)s')", default=2**43, metavar='INT')
+    p_split.add_argument('--use-small-primes', help='Use the smallest possible prime for polynome', action='store_true')
+    p_split.add_argument('--qr', help='Generate QR-code files', action='store_true')
+    p_split.add_argument('--strong', help='Strongest possible security', action='store_true')
+    p_split.add_argument('--showpoly', help='Show the polynome coëfficiënts', action='store_true')
 
     epilog = """
 
@@ -212,63 +165,28 @@ Example call:
    So the secret is found here ("welcome").
    It also shows the prime numbers used for the calculations. This SHOULD be the same as used when generating the shares.
         """
-    p_recover = sub.add_parser(
-        "recover", formatter_class=argparse.RawDescriptionHelpFormatter, epilog=epilog
-    )
-    p_recover.add_argument(
-        "-s",
-        "--share",
-        action="append",
-        help="share data, use option multiple times",
-        metavar="STRING",
-    )
-    p_recover.add_argument(
-        "-q",
-        "--qr-share-files",
-        action="append",
-        help="QR-code file with share, use option multiple times",
-        metavar="FILE",
-    )
-    p_recover.add_argument(
-        "-Q", "--qr-prime-file", help="QR-code file with prime number", metavar="FILE"
-    )
-    p_recover.add_argument(
-        "--prime",
-        "-p",
-        type=int,
-        help="prime number used in algorithm, decimal type (no default)",
-        metavar="INT",
-    )
-    p_recover.add_argument(
-        "--PRIME",
-        "-P",
-        type=str,
-        help="prime number used in algorithm, string type for hex value (no default)",
-        metavar="HEX-STR",
-    )
-    p_recover.add_argument("--secret-file", help="file to store secret", metavar="FILE")
+    p_recover = sub.add_parser('recover', formatter_class=argparse.RawDescriptionHelpFormatter, epilog=epilog)
+    p_recover.add_argument('-s', '--share', action='append', help='share data, use option multiple times', metavar='STRING')
+    p_recover.add_argument('-q', '--qr-share-files', action='append', help='QR-code file with share, use option multiple times', metavar='FILE')
+    p_recover.add_argument('-Q', '--qr-prime-file', help='QR-code file with prime number', metavar='FILE')
+    p_recover.add_argument('--PRIME', '-P', type=int, help='prime number used in algorithm, decimal type (no default)', metavar='INT')
+    p_recover.add_argument('--prime', '-p', type=str, help='prime number used in algorithm, string type for hex value (no default)', metavar='HEX-STR')
+    p_recover.add_argument('--secret-file', help='file to store secret', metavar='FILE')
 
-    p_primes = sub.add_parser("primes", description="Show the used safe prime numbers")
-    p_primes.add_argument("--list", help="List prime numbers", action="store_true")
-    p_primes.add_argument(
-        "--abbreviate",
-        help="Show hex prime numbers in abbreviated format",
-        action="store_true",
-    )
-    p_primes.add_argument(
-        "--decimal-format",
-        help="Show primes in decimal format instead of hex format",
-        action="store_true",
-    )
+    p_primes = sub.add_parser('primes', description='Show the used safe prime numbers')
+    p_primes.add_argument('--abbreviate', help='Show hex prime numbers in abbreviated format', action='store_true')
+    p_primes.add_argument('--decimal-format', help='Show primes in decimal format instead of hex format', action='store_true')
 
     args = parser.parse_args()
 
-    if args.cmd in ("recover", "split") and args.prime and args.PRIME:
-        logger.error("--prime and --PRIME are mutually exclusive")
+    if args.cmd in ('recover', 'split') and args.prime and args.PRIME:
+        logger.error('--prime and --PRIME are mutually exclusive')
         sys.exit(1)
 
-    if args.cmd in ("recover", "split") and args.PRIME:
-        args.prime = int(args.PRIME, 16)
+    if args.cmd in ('recover', 'split') and args.prime:
+        args.prime = int(args.prime, 16)
+    elif args.cmd in ('recover', 'split') and args.PRIME:
+        args.prime = args.PRIME
 
     return args
 
@@ -302,9 +220,7 @@ def get_safe_prime_numbers() -> list:
 
     for safe_prime_number in safe_prime_numbers:
         if not sympy.isprime(n=safe_prime_number):
-            logger.critical(
-                "Error! prime number %s is not really a prime!", safe_prime_number
-            )
+            logger.critical('Error! prime number %s is not really a prime!', safe_prime_number)
             sys.exit(1)
 
     return sorted(safe_prime_numbers)
@@ -312,11 +228,11 @@ def get_safe_prime_numbers() -> list:
 
 def extract_integer_from_string(number) -> int:
     # Find all sequences of digits at the end of the string
-    match = re.search(r"(\d+)$", number)
+    match = re.search(r'(\d+)$', number)
     if match:
         return int(match.group(1))
 
-    logger.critical("Cannot find number information in string", number)
+    logger.critical('Cannot find number information in string', number)
     sys.exit(1)
 
 
@@ -330,19 +246,17 @@ def get_large_enough_prime(batch: list[int], nr_bits: int, primes: list[int]) ->
         if prime.bit_length() > max_batch.bit_length():
             return prime
 
-    logger.critical(
-        f"Error! Cannot find prime with bit length of at least {nr_bits} bits!"
-    )
+    logger.critical(f'Error! Cannot find prime with bit length of at least {nr_bits} bits!')
     sys.exit(1)
 
 
 def _to_int(secret: bytes) -> int:
-    return int.from_bytes(secret, byteorder="big")
+    return int.from_bytes(secret, byteorder='big')
 
 
 def _from_int(i: int) -> bytes:
     length = (i.bit_length() + 7) // 8
-    return i.to_bytes(length, byteorder="big")
+    return i.to_bytes(length, byteorder='big')
 
 
 def _eval_poly(coeffs: list[int], x: int, prime: int) -> int:
@@ -374,82 +288,64 @@ def _lagrange_interpolate(x: int, x_s: list[int], y_s: list[int], prime: int) ->
 def get_next_prime(prime: int) -> int:
     next_prime = sympy.nextprime(prime)
     if next_prime is None:
-        logger.error("Failed to generate prime number")
+        logger.error('Failed to generate prime number')
         sys.exit(1)
     return next_prime
 
 
-def get_next_safe_prime(prime: int) -> tuple[int, int]:
+def get_next_safe_prime(prime: int) -> int:
     next_prime = prime
     if not sympy.isprime(prime):
         next_prime = get_next_prime(prime=prime)
     while True:
         safe_prime = 2 * next_prime + 1
         if sympy.isprime(safe_prime):
-            return safe_prime // 2 + 2, safe_prime
+            return safe_prime
         next_prime = get_next_prime(prime=next_prime)
 
 
 def prime_generator(minimum_prime: int) -> Generator[int]:
-    next_prime, safe_prime = get_next_safe_prime(prime=minimum_prime)
+    step_bit = max(0, (minimum_prime.bit_length() // 8) * 4 - 1)
+    step = 2**step_bit
+    step_delta = 1
+    next_prime = minimum_prime + step_delta * step
     while True:
-        next_prime, safe_prime = get_next_safe_prime(prime=next_prime)
+        step_delta += 1
+        safe_prime = get_next_safe_prime(prime=next_prime)
+        next_prime = max(safe_prime // 2 + 3, minimum_prime + step_delta * step)
+
         yield safe_prime
 
 
-def make_shares(
-    secret: bytes,
-    threshold: int,
-    num_shares: int,
-    prime: int,
-    minimum_x_safe_prime: int,
-) -> tuple[list[tuple[int, int]], list[int], int]:
+def make_shares(secret: bytes, threshold: int, num_shares: int, prime: int, minimum_x_safe_prime: int) -> tuple[list[tuple[int, int]], list[int], int]:
     if num_shares > prime:
-        logger.error(
-            "prime (%s) is smaller than number of shares (%s)", prime, num_shares
-        )
+        logger.error('prime (%s) is smaller than number of shares (%s)', prime, num_shares)
         sys.exit(1)
     secret_int = _to_int(secret)
-    coeffs = [secret_int] + [
-        random.randrange(start=(prime - prime // 16), stop=prime)
-        for _ in range(threshold - 1)
-    ]
+    coeffs = [secret_int] + [random.randrange(start=(prime - prime // 16), stop=prime) for _ in range(threshold - 1)]
     x_prime_generator = prime_generator(minimum_prime=minimum_x_safe_prime // 2)
-    shares = [
-        (x, _eval_poly(coeffs, x, prime))
-        for x in [next(x_prime_generator) for _ in range(num_shares)]
-    ]
+    shares = [(x, _eval_poly(coeffs, x, prime)) for x in [next(x_prime_generator) for _ in range(num_shares)]]
     return shares, coeffs, prime
 
 
-def recover_secret(
-    shares: list[tuple[str, int, int, int, int]], primes: list[int]
-) -> tuple[int, bytes]:
+def recover_secret(shares: list[tuple[str, int, int, int, int]], primes: list[int]) -> tuple[int, bytes]:
     idx, nr_bits, threshold, x_s, y_s = zip(*shares)
     if len(set(idx)) != 1:
-        logger.critical("Error! set of shares do not belong to each other (IDX wrong)")
+        logger.critical('Error! set of shares do not belong to each other (IDX wrong)')
         sys.exit(1)
     if len(set(nr_bits)) != 1:
-        logger.critical(
-            "Error! set of shares do not belong to each other (#bits wrong)"
-        )
+        logger.critical('Error! set of shares do not belong to each other (#bits wrong)')
         sys.exit(1)
     if len(set(threshold)) != 1:
-        logger.critical(
-            "Error! set of shares do not belong to each other (threshold wrong)"
-        )
+        logger.critical('Error! set of shares do not belong to each other (threshold wrong)')
         sys.exit(1)
 
     if len(set(shares)) < threshold[0]:
-        logger.critical(
-            "For this secret I need %s shares, but I only got %s unique shares",
-            threshold[0],
-            len(set(shares)),
-        )
+        logger.critical('For this secret I need %s shares, but I only got %s unique shares', threshold[0], len(set(shares)))
         sys.exit(1)
 
     if len(primes) == 0:
-        logger.critical("No primes are available for the calculation")
+        logger.critical('No primes are available for the calculation')
         sys.exit(1)
     elif len(primes) == 1:
         prime = primes[0]
@@ -459,67 +355,57 @@ def recover_secret(
     return prime, _from_int(secret_int)
 
 
-def _share_to_text(
-    share: tuple[int, int],
-    nr_bits,
-    unique_name: str,
-    threshold: int,
-    number_format: str = "hex",
-) -> str:
-    x, y = share
-    partial_string = f"{unique_name}-SP{nr_bits}-T{threshold}-{x:X}"
-    if number_format == "decimal":
-        return f'{' ' * len(partial_string)} {y:<10} DECIMAL:  NEVER USE THIS FOR RECOVERY, IT WILL NOT WORK'
-    elif number_format == "hex":
-        return f"{partial_string}-{y:X}"
+def _prime_to_text(prime: int, nr_bits, unique_name: str, threshold: int) -> str:
+    partial_string = f'{unique_name}-SP{nr_bits}-T{threshold}-prime'
+    return f'{partial_string}-{prime:X}'
 
-    logger.critical("Unknown number format used in _share_to_text")
+
+def _share_to_text(share: tuple[int, int], nr_bits, unique_name: str, threshold: int, number_format: str = 'hex') -> str:
+    x, y = share
+    partial_string = f'{unique_name}-SP{nr_bits}-T{threshold}-{x:X}'
+    if number_format == 'decimal':
+        return f'{' ' * len(partial_string)} {y:<10} DECIMAL:  NEVER USE THIS FOR RECOVERY, IT WILL NOT WORK'
+    elif number_format == 'hex':
+        return f'{partial_string}-{y:X}'
+
+    logger.critical('Unknown number format used in _share_to_text')
     sys.exit(1)
 
 
+def _text_to_prime(text: str) -> int:
+    return int(text.split('-')[-1], 16)
+
+
 def _text_to_share(text: str) -> tuple[str, int, int, int, int]:
-    idx, nr_bits, threshold, x_str, y_hex = text.split("-", 4)
-    return (
-        idx,
-        extract_integer_from_string(number=nr_bits),
-        extract_integer_from_string(number=threshold),
-        int(x_str, 16),
-        int(y_hex, 16),
-    )
+    idx, nr_bits, threshold, x_str, y_hex = text.split('-', 4)
+    return idx, extract_integer_from_string(number=nr_bits), extract_integer_from_string(number=threshold), int(x_str, 16), int(y_hex, 16)
 
 
 def save_qr(data: str, filename: str, is_prime: bool = False) -> None:
     img = qrcode.make(data)
     img.save(filename)
     if is_prime:
-        logger.debug("   Saving prime number to QR-code file %s", filename)
+        logger.debug('     Saving prime to QR-code file %s', filename)
     else:
-        logger.debug("     Saving share to QR-code file %s", filename)
+        logger.debug('     Saving share to QR-code file %s', filename)
 
 
 def read_qr(filename: str) -> str:
     if not HAS_PYZBAR:
-        logger.critical("Reading QR code file is not available")
-        logger.info(
-            'Alternative: read the QR code with a mobile and use the "--share" option instead'
-        )
+        logger.critical('Reading QR code file is not available')
+        logger.info('Alternative: read the QR code with a mobile and use the "--share" option instead')
         sys.exit(1)
     img = Image.open(filename)
     decoded_objs = decode(img)
-    results = [obj.data.decode("utf-8") for obj in decoded_objs]
+    results = [obj.data.decode('utf-8') for obj in decoded_objs]
     return results[0]
 
 
-def are_generated_shares_ok(
-    secret_bytes: bytes,
-    shares: list[tuple[str, int, int, int, int]],
-    threshold: int,
-    prime: int,
-) -> bool:
+def are_generated_shares_ok(secret_bytes: bytes, shares: list[tuple[str, int, int, int, int]], threshold: int, prime: int) -> bool:
     """
     Test all possible combinations of shares for reconstruction.
     """
-    logger.warning("\nTesting all share combinations")
+    logger.warning('\nTesting all share combinations')
 
     all_combinations_are_ok = True
     prime_is_weak = False
@@ -531,7 +417,7 @@ def are_generated_shares_ok(
         _, reconstructed = recover_secret(shares=list(subset), primes=[prime])
         if reconstructed != secret_bytes:
             all_combinations_are_ok = False
-            logger.critical("Combination %s: Failed", subset)
+            logger.critical('Combination %s: Failed', subset)
         for weak_prime in get_safe_prime_numbers():
             _, reconstructed = recover_secret(shares=list(subset), primes=[weak_prime])
             if reconstructed == secret_bytes:
@@ -547,118 +433,58 @@ def are_generated_shares_ok(
                     weakest_needed_prime = weak_prime
 
     if all_combinations_are_ok:
-        logger.info(
-            "   All %s combinations successfully reconstructed the secret.",
-            count_combinations,
-        )
+        logger.info('   All %s combinations successfully reconstructed the secret.', count_combinations)
     else:
-        logger.error(
-            "   ERROR: Not all valid combinations successfully reconstructed the secret."
-        )
+        logger.error('   ERROR: Not all valid combinations successfully reconstructed the secret.')
 
     if prime_is_weak:
-        logger.error(
-            "   ERROR: vulnerable for weak prime attack with %s bits, needed %s bits",
-            weakest_needed_prime.bit_length(),
-            prime.bit_length(),
-        )
+        logger.error('   ERROR: vulnerable for weak prime attack with %s bits, needed %s bits', weakest_needed_prime.bit_length(), prime.bit_length())
         for x in sorted(problem_x):
-            logger.warning(
-                "      x=%s  frequency problems=%s", f"{x:5d}", f"{problem_x[x]:2d}"
-            )
+            logger.warning('      x=%s  frequency problems=%s', f'{x:5d}', f'{problem_x[x]:2d}')
     else:
-        logger.info(
-            "   Needed prime is not weak, need %s bits",
-            weakest_needed_prime.bit_length(),
-        )
+        logger.info('   Needed prime is not weak, need %s bits', weakest_needed_prime.bit_length())
 
     return all_combinations_are_ok and not prime_is_weak
 
 
-def mode_split(
-    secret_bytes: bytes,
-    threshold: int,
-    num_shares: int,
-    prime: int,
-    minimum_x_safe_prime: int,
-    qr: bool,
-    unique_name: str,
-    showpoly: bool,
-) -> None:
-    shares, coeffs, prime = make_shares(
-        secret=secret_bytes,
-        threshold=threshold,
-        num_shares=num_shares,
-        prime=prime,
-        minimum_x_safe_prime=minimum_x_safe_prime,
-    )
-    number_format = "decimal" if prime.bit_length() < 35 else "hex"
-    logger.warning("Generated shares:")
-    prime_number_id = f"{unique_name}-SP{prime.bit_length()}-T{threshold}-prime"
-    print(
-        f"   {prime_number_id}-{prime:X}"
-    )  # print used here, as we donot want any formatting characters here!
+def mode_split(secret_bytes: bytes, threshold: int, num_shares: int, prime: int, minimum_x_safe_prime: int, qr: bool, unique_name: str, showpoly: bool) -> None:
+    shares, coeffs, prime = make_shares(secret=secret_bytes, threshold=threshold, num_shares=num_shares, prime=prime, minimum_x_safe_prime=minimum_x_safe_prime)
+    number_format = 'decimal' if prime.bit_length() < 35 else 'hex'
+    logger.warning('Generated shares:')
+    prime_text = _prime_to_text(prime=prime, unique_name=unique_name, nr_bits=prime.bit_length(), threshold=threshold)
+    print(f'   {prime_text}')  # print used here, as we donot want any formatting characters here!
     if qr:
-        save_qr(
-            data=f"{prime:X}",
-            filename=f"QR-shamir_sss-{prime_number_id}.png",
-            is_prime=True,
-        )
+        save_qr(data=prime_text, filename=f'QR-shamir_sss-{unique_name}-SP{prime.bit_length()}-T{threshold}-prime.png', is_prime=True)
     hex_shares = []
     for idx, s in enumerate(shares):
-        share_text = _share_to_text(
-            share=s,
-            unique_name=unique_name,
-            nr_bits=prime.bit_length(),
-            threshold=threshold,
-            number_format="hex",
-        )
+        share_text = _share_to_text(share=s, unique_name=unique_name, nr_bits=prime.bit_length(), threshold=threshold, number_format='hex')
         hex_shares.append(_text_to_share(text=share_text))
-        print(
-            f"   {share_text}"
-        )  # print used here, as we donot want any formatting characters here!
+        print(f'   {share_text}')  # print used here, as we donot want any formatting characters here!
 
         if qr:
-            save_qr(
-                data=share_text,
-                filename=f"QR-shamir_sss-{unique_name}-SP{prime.bit_length()}-T{threshold}-{idx+1}.png",
-            )
+            save_qr(data=share_text, filename=f'QR-shamir_sss-{unique_name}-SP{prime.bit_length()}-T{threshold}-{idx+1}.png')
 
-        if number_format == "decimal":
-            share_text_decimal = _share_to_text(
-                share=s,
-                unique_name="",
-                nr_bits=prime.bit_length(),
-                threshold=threshold,
-                number_format="decimal",
-            )
-            logger.debug("   %s", share_text_decimal)
+        if number_format == 'decimal':
+            share_text_decimal = _share_to_text(share=s, unique_name='', nr_bits=prime.bit_length(), threshold=threshold, number_format='decimal')
+            logger.debug('   %s', share_text_decimal)
 
-    no_share_problems = are_generated_shares_ok(
-        secret_bytes=secret_bytes, shares=hex_shares, threshold=threshold, prime=prime
-    )
+    no_share_problems = are_generated_shares_ok(secret_bytes=secret_bytes, shares=hex_shares, threshold=threshold, prime=prime)
 
-    logger.warning("\nPrime number used:")
-    logger.info("   hex    : %s", f"{prime:X}")
-    logger.debug("   decimal: %s", prime)
-    logger.info("   bitsize: %s", prime.bit_length())
+    logger.warning('\nPrime number used:')
+    logger.info('   hex    : %s', f'{prime:X}')
+    logger.debug('   decimal: %s', prime)
+    logger.info('   bitsize: %s', prime.bit_length())
     if showpoly:
-        logger.warning("\nPolynome coëfficiënts (const term first):")
+        logger.warning('\nPolynome coëfficiënts (const term first):')
         for i, c in enumerate(coeffs):
-            logger.info("   a%s =\t%s", i, f"{c:X}")
-            logger.debug("   \t%s", c)
+            logger.info('   a%s =\t%s', i, f'{c:X}')
+            logger.debug('   \t%s', c)
 
     if not no_share_problems:
-        logger.critical("\nYOU SHOULD NOT USE THESE SHARES AS THEY ARE NOT OK")
+        logger.critical('\nYOU SHOULD NOT USE THESE SHARES AS THEY ARE NOT OK')
 
 
-def mode_recover(
-    shares: list[str],
-    qr_share_files: list[str],
-    qr_prime_file: str,
-    primes: list[int],
-    secret_file: str,
-) -> None:
+def mode_recover(shares: list[str], qr_share_files: list[str], qr_prime_file: str, primes: list[int], secret_file: str) -> None:
     found_shares = []
     if shares:
         found_shares.extend([_text_to_share(s) for s in shares])
@@ -667,42 +493,37 @@ def mode_recover(
             text = read_qr(qrfile)
             found_shares.append(_text_to_share(text))
     if qr_prime_file:
-        prime = read_qr(qr_prime_file)
-        primes = [int(prime, 16)]
+        text = read_qr(qr_prime_file)
+        prime = _text_to_prime(text=text)
+        primes = [prime]
 
     if not found_shares:
-        logger.critical("No shares provided, please use --share option")
+        logger.critical('No shares provided, please use --share option')
         sys.exit(1)
     prime, secret_bytes = recover_secret(shares=found_shares, primes=primes)
-    logger.warning("\nPrime number used:")
-    logger.info("   hex    : %s", f"{prime:X}")
-    logger.debug("   decimal: %s", prime)
-    logger.info("   bitsize: %s", prime.bit_length())
+    logger.warning('\nPrime number used:')
+    logger.info('   hex    : %s', f'{prime:X}')
+    logger.debug('   decimal: %s', prime)
+    logger.info('   bitsize: %s', prime.bit_length())
     if secret_file:
-        with open(secret_file, "wb") as f:
-            logger.warning("Secret written to file %s", secret_file)
+        with open(secret_file, 'wb') as f:
+            logger.warning('Secret written to file %s', secret_file)
             f.write(secret_bytes)
     else:
         try:
             # print used here, as we donot want any formatting characters here!
             if secret_bytes.decode() != secret_bytes.decode().strip():
-                logger.warning(
-                    "\nSecret (between ||), note: secret can be padded with spaces due to security reasons:"
-                )
-                print(
-                    f"   |{secret_bytes.decode()}|   or   |{secret_bytes.decode().strip()}|"
-                )
+                logger.warning('\nSecret (between ||), note: secret can be padded with spaces due to security reasons:')
+                print(f'   |{secret_bytes.decode()}|   or   |{secret_bytes.decode().strip()}|')
             else:
-                logger.warning("\nSecret (between ||):")
-                print(f"   |{secret_bytes.decode()}|")
+                logger.warning('\nSecret (between ||):')
+                print(f'   |{secret_bytes.decode()}|')
         except UnicodeDecodeError:
-            logger.critical(
-                "Cannot decode secret properly with secret_bytes  |%s|", secret_bytes
-            )
+            logger.critical('Cannot decode secret properly with secret_bytes  |%s|', secret_bytes)
 
 
 def abbreviate_hex(number: int) -> str:
-    hex_str = f"{number:X}"
+    hex_str = f'{number:X}'
     hex_1 = hex_str[0]
 
     N = None
@@ -713,15 +534,15 @@ def abbreviate_hex(number: int) -> str:
             break
 
     if N is None:
-        hex_str = "           " + hex_str
+        hex_str = '           ' + hex_str
     else:
-        hex_str = hex_str.replace(hex_1 * N, f" {hex_1} * {N:3d} . ")
+        hex_str = hex_str.replace(hex_1 * N, f' {hex_1} * {N:3d} . ')
 
     return hex_str
 
 
 def random_string(N: int) -> str:
-    return "".join(random.choices(string.ascii_letters + string.digits, k=N))
+    return ''.join(random.choices(string.ascii_letters + string.digits, k=N))
 
 
 def main() -> None:
@@ -746,19 +567,17 @@ def main() -> None:
     #  │ ███████║██║     ███████╗██║   ██║    │
     #  │ ╚══════╝╚═╝     ╚══════╝╚═╝   ╚═╝    │
     #  └──────────────────────────────────────┘
-    if args.cmd == "split":
-        secret_string = ""
+    if args.cmd == 'split':
+        secret_string = ''
         if args.keyboard_secret:
-            secret_string = input("Please type secret here:  ")
+            secret_string = input('Please type secret here:  ')
         elif args.secret:
             secret_string = args.secret
         elif args.secret_file:
-            with open(args.secret_file, "rb") as f:
+            with open(args.secret_file, 'rb') as f:
                 secret_bytes = f.read()
         else:
-            logger.critical(
-                "Please use --keyboard-secret, --secret or --secret-file option"
-            )
+            logger.critical('Please use --keyboard-secret, --secret or --secret-file option')
             sys.exit(1)
 
         # if len(secret_string) < 16:
@@ -771,23 +590,14 @@ def main() -> None:
 
         if args.strong:
             standard_primes = [standard_primes[-1]]
-        prime = args.prime or get_large_enough_prime(
-            batch=[_to_int(secret_bytes)],
-            nr_bits=args.strength_level,
-            primes=standard_primes,
-        )
+        prime = args.prime or get_large_enough_prime(batch=[_to_int(secret_bytes)], nr_bits=args.strength_level, primes=standard_primes)
         if not sympy.isprime(n=prime):
-            logger.critical("given prime (%s) is not a prime", prime)
+            logger.critical('given prime (%s) is not a prime', prime)
             sys.exit(1)
         if prime.bit_length() < 192:
-            logger.critical("Security is not SAFE as a too small prime number is used")
+            logger.critical('Security is not SAFE as a too small prime number is used')
         if secret_int > prime:
-            logger.critical(
-                "Used prime number (%s) is too small for this secret (%s), should be at least: %s",
-                prime,
-                secret_bytes,
-                secret_int,
-            )
+            logger.critical('Used prime number (%s) is too small for this secret (%s), should be at least: %s', prime, secret_bytes, secret_int)
             sys.exit(1)
         mode_split(
             secret_bytes=secret_bytes,
@@ -809,15 +619,11 @@ def main() -> None:
     #  │ ██║  ██║███████╗╚██████╗╚██████╔╝ ╚████╔╝ ███████╗██║  ██║ │
     #  │ ╚═╝  ╚═╝╚══════╝ ╚═════╝ ╚═════╝   ╚═══╝  ╚══════╝╚═╝  ╚═╝ │
     #  └────────────────────────────────────────────────────────────┘
-    elif args.cmd == "recover":
+    elif args.cmd == 'recover':
         if args.prime:
             standard_primes = [args.prime]
         mode_recover(
-            shares=args.share,
-            qr_share_files=args.qr_share_files,
-            qr_prime_file=args.qr_prime_file,
-            primes=standard_primes,
-            secret_file=args.secret_file,
+            shares=args.share, qr_share_files=args.qr_share_files, qr_prime_file=args.qr_prime_file, primes=standard_primes, secret_file=args.secret_file
         )
 
     #  ┌────────────────────────────────────────────────┐
@@ -829,25 +635,18 @@ def main() -> None:
     #  │ ██║     ██║  ██║██║██║ ╚═╝ ██║███████╗███████║ │
     #  │ ╚═╝     ╚═╝  ╚═╝╚═╝╚═╝     ╚═╝╚══════╝╚══════╝ │
     #  └────────────────────────────────────────────────┘
-    elif args.cmd == "primes":
-        if args.list:
-            logger.warning("Available primes:")
-            for standard_prime in standard_primes:
-                if args.decimal_format:
-                    logger.info(
-                        f" {standard_prime.bit_length():4d} -> {standard_prime}"
-                    )
+    elif args.cmd == 'primes':
+        logger.warning('Available primes:')
+        for standard_prime in standard_primes:
+            if args.decimal_format:
+                logger.info(f' {standard_prime.bit_length():4d} -> {standard_prime}')
+            else:
+                if args.abbreviate:
+                    logger.info(f' {standard_prime.bit_length():4d} -> 0x{abbreviate_hex(number=standard_prime)}')
                 else:
-                    if args.abbreviate:
-                        logger.info(
-                            f" {standard_prime.bit_length():4d} -> 0x{abbreviate_hex(number=standard_prime)}"
-                        )
-                    else:
-                        logger.info(
-                            f" {standard_prime.bit_length():4d} -> 0x{standard_prime:X}"
-                        )
+                    logger.info(f' {standard_prime.bit_length():4d} -> 0x{standard_prime:X}')
 
 
-if __name__ == "__main__":
+if __name__ == '__main__':
     logger = logging.getLogger(Path(__file__).stem)
     main()
