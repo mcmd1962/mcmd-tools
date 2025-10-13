@@ -44,28 +44,45 @@
     </a>
     <p class="text-gray-600">Geheimen samenvoegen uit QR-codes</p>
   </header>
-
   <!-- Scanner + upload -->
-  <section class="bg-yellow-300 rounded-xl shadow p-96 space-y-4">
+  <section class="bg-yellow-300 rounded-xl shadow p-6 space-y-4">
+    <div class="flex justify-between items-center mb-3">
+      <h2 class="text-lg font-semibold">QR Scanner</h2>
+      <button id="toggleCameraBtn" class="bg-teal-600 text-white mb-4 rounded px-3 py-2">
+        Camera uitschakelen
+      </button>
+    </div>
     <div class="w-full h-64 bg-red-600 border rounded" id="reader"></div>
+    <hr class="text-gray-500">
+    <label for="fileInput" class="block text-sm font-medium text-gray-500 mb-1">
+       Upload een QR-code afbeelding of tekstbestand (bijv. QR-shamir_sss-MySecret-SP96-T2-1.png)
+    </label>
     <input accept="image/*" class="mt-3 block w-full border rounded p-2" id="fileInput" type="file"/>
+    <!-- Nieuw: tekstveld voor handmatige invoer -->
+    <hr class="text-gray-500">
+    <div class="mb-3">
+      <label for="manualShareInput" class="block text-sm font-medium text-gray-500 mb-1">
+        Voeg een share handmatig toe:
+      </label>
+      <div class="flex gap-2">
+        <input type="text" id="manualShareInput" class="flex-1 mt-3 border rounded p-2 bg-blue-600" placeholder="Plak hier de share (bijv. MySecret-SP96-T2-17F-CBB247FB)">
+        <button id="addManualShareBtn" class="bg-teal-600 text-white rounded px-3 py-2">Toevoegen</button>
+      </div>
+    </div>
   </section>
 
   <!-- Gevonden delen -->
   <section class="bg-white rounded-xl shadow p-6">
-    <div class="flex items-center justify-between mb-3">
-      <h2 class="text-lg font-semibold">Gescande delen</h2>
-      <button id="resetBtnTop" class="bg-gray-300 text-gray-800 rounded px-3 py-2">Reset</button>
-    </div>
-
-    <!-- Nieuw: progress-indicator -->
+    <!-- Voortgangsindicator -->
     <div id="progressIndicator" class="text-sm font-medium text-gray-700 mb-2">
       Nog geen QR-codes of priem getal gescand.
     </div>
-
     <div class="space-y-2" id="foundShares"></div>
+    <div class="flex items-center justify-between mb-3">
+      <h2 class="text-lg bg-yellfont-semibold">Gescande delen</h2>
+      <button id="resetBtnTop" class="bg-gray-300 text-gray-800 rounded px-3 py-2">Reset</button>
+    </div>
   </section>
-
   <!-- Resultaat -->
   <section class="bg-white rounded-xl shadow p-6 hidden" id="resultaat">
     <h2 class="text-lg font-semibold mb-3">Hersteld geheim</h2>
@@ -86,12 +103,10 @@
     </div>
   </section>
 </div>
-
 <!-- Duidelijkere beep (~500 Hz, 300 ms) via <audio> -->
 <audio id="beepSound" preload="auto">
   <source src="data:audio/wav;base64,UklGRmQAAABXQVZFZm10IBAAAAABAAEAQB8AAEAfAAABAAgAZGF0YQAAgP///wDwPwAA8D8AAPB/AADwfwAA8H8AAPB/AADwfwAA8H8AAPB/AADwfwAA8H8AAPB/AADwPwAA" type="audio/wav"/>
 </audio>
-
 <script src="lib/html5-qrcode.min.js"></script>
 <script src="lib/jsqr.min.js"></script>
 <script>
@@ -122,7 +137,6 @@
     window.addEventListener('DOMContentLoaded', unlock);
   }
 })();
-
 const primes = { };
 
 function getPrime(primeBits, customPrime) {
@@ -134,7 +148,6 @@ function getPrime(primeBits, customPrime) {
     }
     return primes[primeBits];
 }
-
 function feedbackSuccess(){
   const beep=document.getElementById("beepSound");
   if(beep){
@@ -149,38 +162,58 @@ function feedbackSuccess(){
     navigator.vibrate(150);
   }
 }
-
 // Opslag voor ontvangen shares and primes
 let customPrime = 0n;
 let shares = [];
+let cameraActive = true; // Nieuw: camera status
+
+// Nieuw: camera toggle
+document.querySelector("#toggleCameraBtn").addEventListener("click", async () => {
+  if (cameraActive) {
+    try {
+      await qr.stop();
+      document.querySelector("#toggleCameraBtn").textContent = "Camera inschakelen";
+      document.querySelector("#toggleCameraBtn").className = "bg-red-600 text-white rounded px-3 py-2 mb-4";
+      showStatus("Camera uitgeschakeld", "info");
+    } catch (e) {
+      showStatus("Fout bij uitschakelen camera", "error");
+    }
+  } else {
+    try {
+      await qr.start(cameraConstraints, cameraConfig, handleScannedPayload);
+      document.querySelector("#toggleCameraBtn").textContent = "Camera uitschakelen";
+      document.querySelector("#toggleCameraBtn").className = "bg-teal-600 text-white rounded px-3 py-2 mb-4";
+      showStatus("Camera ingeschakeld", "success");
+    } catch (e) {
+      showStatus("Fout bij inschakelen camera", "error");
+    }
+  }
+  cameraActive = !cameraActive;
+});
 
 // Nieuw: voortgang bijwerken
 function updateProgress() {
   const prog = document.querySelector("#progressIndicator");
-  
   if (!prog) return;
-
   if (shares.length === 0) {
     if (customPrime) {
         prog.textContent = "Nog geen QR-codes gescand maar wel een priem getal.";
     } else {
-        prog.textContent = "Nog geen QR-codes of priem getal gescand 2.";
+        prog.textContent = "Nog geen QR-codes of priem getal gescand.";
     }
     prog.className = "text-sm font-medium text-gray-700 mb-2";
     return;
   }
-
-  const totaal = shares[0].t
+  const totaal = shares[0].t;
   const huidig = shares.length;
   const resterend = Math.max(0, totaal - huidig);
-
   if (resterend > 0) {
-    share_prime = shares[0]['prime_bits']
+    share_prime = shares[0]['prime_bits'];
     const div=document.createElement('div');
     if (customPrime) {
-        prog.textContent = `Gescand: ${huidig}/${totaal} (nog ${resterend} te gaan), met eigen priemgetal ${customPrime}`;
+        prog.textContent = `Gescand: ${huidig}/${totaal} (nog ${resterend} te gaan), met eigen priemgetal ${customPrime.toString(16).toUpperCase()}`;
     } else {
-      prog.textContent = `Gescand: ${huidig}/${totaal} (nog ${resterend} te gaan), met share priemgetal ${share_prime}`;
+      prog.textContent = `Gescand: ${huidig}/${totaal} (nog ${resterend} te gaan), met share priemgetal ${share_prime.toString(16).toUpperCase()}`;
     }
     prog.className = "text-sm font-medium text-orange-600 mb-2";
     document.body.appendChild(div);
@@ -189,30 +222,25 @@ function updateProgress() {
     if (customPrime) {
         prog.textContent = `Alle benodigde QR-codes gescand (${huidig}/${totaal}) 🎉, met eigen priemgetal`;
     } else {
-      prog.textContent = `Alle benodigde QR-codes gescand (${huidig}/${totaal}) 🎉, met share priemgetal ${share_prime}`;
+      prog.textContent = `Alle benodigde QR-codes gescand (${huidig}/${totaal}) 🎉, met share priemgetal ${share_prime.toString(16).toUpperCase()}`;
     }
     prog.className = "text-sm font-medium text-green-700 mb-2";
     document.body.appendChild(div);
   }
 }
-
 // Popup statusmeldingen
 function showStatus(msg, type="info"){
   const old = document.querySelector(".popupStatus");
   if(old) old.remove();
-
   const div=document.createElement('div');
   div.textContent=msg;
   div.className='popupStatus fixed bottom-4 left-1/2 -translate-x-1/2 text-sm px-3 py-2 rounded-xl shadow z-50';
-  
   if(type==="success"){ div.classList.add('bg-green-600','text-white'); }
   else if(type==="error"){ div.classList.add('bg-red-600','text-white'); }
   else { div.classList.add('bg-gray-900','text-white'); }
-
   document.body.appendChild(div);
   setTimeout(()=>div.remove(),2500);
 }
-
 // Share verwerken
 function parseShareToDict(shareString) {
     // ID.CC59BA-SP96-T2-prime-87
@@ -223,11 +251,9 @@ function parseShareToDict(shareString) {
     return {};
     }
     shareParts = {};
-
     shareParts['id'] = parts[0];
     shareParts['t'] = parseInt(parts[2].replace('T', ''), 10);
     shareParts['prime_bits'] = getPrime(parseInt(parts[1].replace('SP', ''), 10));
-
     if (shareString.includes('-prime-')) {
         shareParts['customPrime'] = BigInt("0x" + parts[4]);
         console.log("customPrime found! " + shareParts.customPrime);
@@ -237,40 +263,33 @@ function parseShareToDict(shareString) {
         shareParts['y'] = BigInt("0x" + parts[4]);
         console.log("x,y pair found!");
     }
-
     return shareParts;
 }
-
-
 // Payload verwerken
 function handleScannedPayload(text){
   try {
     const env = parseShareToDict(text.trim());
-
     // Wrong id, error
     if (shares.some(s => s.id !== env.id )) {
       const msg = `Deze QR hoort bij een andere set (id ${env.id}). Huidige set: ${shares[0].id}.`;
       showStatus(msg, "error");
       return;
     }
-
     // Duplicaat → stil negeren
     if (shares.some(s => s.id === env.id && s.x === env.x)) {
       return;
     }
-
     // empty dictionary
     if (env.customPrime != 0) {
         customPrime = env.customPrime;
         const div=document.createElement('div');
-        div.textContent = `Priem getal ontvangen ${customPrime}!`;
+        div.textContent = `Priem getal ontvangen ${customPrime.toString(16).toUpperCase()}!`;
         div.className="p-2 border rounded bg-gray-100 text-sm";
         document.querySelector("#foundShares").appendChild(div);
-        showStatus(`Priem getal ontvangen ${customPrime}`,"success");
+        showStatus(`Priem getal ontvangen ${customPrime.toString(16).toUpperCase()}`,"success");
         updateProgress();
         return;
     }
-    
     // --- Validate that incoming share belongs to the same set ---
     if (shares.length > 0) {
       const cur = shares[0];
@@ -288,18 +307,14 @@ function handleScannedPayload(text){
       }
     }
     shares.push(env);
-
     // voortgang bijwerken na toevoegen
     updateProgress();
-
     const div=document.createElement('div');
-    div.textContent = `Deel ${env.x.toString(16)} ontvangen van set  met id ${env.id}`;
+    div.textContent = `Deel ${env.x.toString(16)} ontvangen van set met id ${env.id}`;
     div.className="p-2 border rounded bg-gray-100 text-sm";
     document.querySelector("#foundShares").appendChild(div);
-
     showStatus(`QR gescand: deel ${env.x.toString(16)} ontvangen`,"success");
     feedbackSuccess();
-
     tryRestore();
   } catch(e) {
     console.error("Geen geldige payload", e);
@@ -311,32 +326,26 @@ function handleScannedPayload(text){
     // Anders stil negeren (kan afkomstig zijn van willekeurige QR in camera of binaire data)
   }
 }
-
 // Geheim herstellen
 function tryRestore(){
   if (shares.length < 2) return;
-  if (shares.length < shares[0].k) return;
-
+  if (shares.length < shares[0].t) return;
   const prime = customPrime ? customPrime : shares[0]['prime_bits'];
   const secret = decodeShares(shares, prime);
   showSecret(secret);
 }
-
 // Modular addition: (a + b) mod m
 function modAdd(a, b, m) {
   return (a + b) % m;
 }
-
 // Modular subtraction: (a - b) mod m
 function modSub(a, b, m) {
   return (a - b + m) % m;
 }
-
 // Modular multiplication: (a * b) mod m
 function modMul(a, b, m) {
   return (a * b) % m;
 }
-
 // Modular inverse: (a^(-1)) mod m (using Extended Euclidean Algorithm)
 function modInv(a, m) {
   let [oldR, r] = [a, m];
@@ -348,7 +357,6 @@ function modInv(a, m) {
   }
   return oldS < 0 ? oldS + m : oldS;
 }
-
 // Lagrange interpolation to reconstruct the secret
 function reconstructSecret(shares, prime) {
   let secret = 0n;
@@ -367,11 +375,9 @@ function reconstructSecret(shares, prime) {
   }
   return secret;
 }
-
 // Main function to decode shares
 function decodeShares(shares, customPrime = null) {
   // Parse shares
-
   // Validate shares
   const { id: firstId, t: threshold } = shares[0];
   if (!shares.every((s) => s.id === firstId)) {
@@ -380,41 +386,32 @@ function decodeShares(shares, customPrime = null) {
   if (shares.length < threshold) {
     throw new Error(`At least ${threshold} shares are required.`);
   }
-
   // Use custom prime or predefined prime
   if (!customPrime) {
     throw new Error("Prime not found in predefined list.");
   }
-
   // Reconstruct secret
   const secret = reconstructSecret(shares, customPrime);
-
   // Convert secret to hex string and then to UTF-8
   const hexString = secret.toString(16);
   const secretBuffer = new Uint8Array(hexString.match(/.{1,2}/g).map((byte) => parseInt(byte, 16)));
   return new TextDecoder().decode(secretBuffer);
 }
-
-
 // Geheim tonen
 function showSecret(txt){
   const cont=document.querySelector("#secretContainer");
   cont.innerHTML="";
-
   const ta=document.createElement("textarea");
   ta.rows=6;
   ta.className="w-full border rounded p-2 font-mono bg-green-600";
   ta.value=txt;
   cont.appendChild(ta);
-
   document.querySelector("#resultaat").classList.remove("hidden");
   document.querySelector("#bmac-block").style.display="block";
   setTimeout(()=>{ cont.scrollIntoView({behavior:"smooth"}); },300);
-
   showStatus("✅ Geheim hersteld!","success");
   feedbackSuccess();
 }
-
 // Kopieer & reset
 document.querySelector("#copyBtn").addEventListener("click", async ()=>{
   const ta=document.querySelector("#secretContainer textarea");
@@ -429,11 +426,9 @@ document.querySelector("#copyBtn").addEventListener("click", async ()=>{
     feedbackSuccess();
   } catch {}
 });
-
 function doReset(){
   shares=[];
   customPrime = 0;
-
   updateProgress(); // Nieuw: voortgang resetten
   document.querySelector("#foundShares").innerHTML="";
   document.querySelector("#resultaat").classList.add("hidden");
@@ -443,6 +438,30 @@ function doReset(){
 document.querySelector("#resetBtn").addEventListener("click", doReset);
 const resetBtnTop = document.querySelector("#resetBtnTop");
 if (resetBtnTop) resetBtnTop.addEventListener("click", doReset);
+
+// Handmatige share invoer
+document.querySelector("#addManualShareBtn").addEventListener("click", () => {
+  const input = document.querySelector("#manualShareInput");
+  const shareString = input.value.trim();
+  if (!shareString) {
+    showStatus("Voer een share in", "error");
+    return;
+  }
+  try {
+    handleScannedPayload(shareString);
+    input.value = ""; // Clear input
+  } catch (e) {
+    showStatus("Ongeldige share", "error");
+  }
+});
+
+// Enter-toevoegen ondersteunen
+document.querySelector("#manualShareInput").addEventListener("keypress", (e) => {
+  if (e.key === "Enter") {
+    document.querySelector("#addManualShareBtn").click();
+  }
+});
+
 // QR scanner starten (responsive qrbox + fixed aspect ratio to avoid oversized video)
 const isMobile = /Android|iPhone|iPad|iPod/i.test(navigator.userAgent);
 const qrbox = (vw, vh) => {
@@ -461,7 +480,6 @@ document.querySelector("#fileInput").addEventListener("change", async (e)=>{
   const name = (file.name || "").toLowerCase();
   const mime = (file.type || "");
   const looksImage = (mime.startsWith("image/")) || /\.(png|jpe?g|gif|bmp|webp)$/.test(name);
-
   try {
     if (looksImage) {
       let decodedText = null;
@@ -507,7 +525,6 @@ document.querySelector("#fileInput").addEventListener("change", async (e)=>{
         return;
       }
     }
-
     // TEXT path
     const reader = new FileReader();
     reader.onload = () => {
@@ -516,7 +533,6 @@ document.querySelector("#fileInput").addEventListener("change", async (e)=>{
       handleScannedPayload(txt);
     };
     reader.readAsText(file);
-
   } catch(err){
     console.error(err);
     showStatus("Upload-fout: "+err, "error");
@@ -525,7 +541,6 @@ document.querySelector("#fileInput").addEventListener("change", async (e)=>{
     e.target.value = "";
   }
 });
-
 // Hash auto-loader
 window.addEventListener("load", ()=>{
   if(location.hash.length > 1){
@@ -541,8 +556,7 @@ window.addEventListener("load", ()=>{
 </script>
 <script>try{localStorage.setItem('qrs_lang','nl')}catch(e){}</script>
 <footer class="mt-10 mb-6 text-xs text-gray-500 text-center space-y-1">
-  <p>⚠️ Gebruik op eigen risico. Jij bent verantwoordelijk voor je geheime gegevens. 
-  </p>
+  <p>⚠️ Gebruik op eigen risico. Jij bent verantwoordelijk voor je geheime gegevens.</p>
 </footer>
 </body>
 </html>
