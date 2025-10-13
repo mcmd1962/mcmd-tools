@@ -440,7 +440,7 @@ def are_generated_shares_ok(secret_bytes: bytes, shares: list[tuple[str, int, in
     if prime_is_weak:
         logger.error('   ERROR: vulnerable for weak prime attack with %s bits, needed %s bits', weakest_needed_prime.bit_length(), prime.bit_length())
         for x in sorted(problem_x):
-            logger.warning('      x=%s  frequency problems=%s', f'{x:5d}', f'{problem_x[x]:2d}')
+            logger.warning('      x=%s  frequency problems=%s', f'{x:3X}', f'{problem_x[x]:2d}')
     else:
         logger.info('   Needed prime is not weak, need %s bits', weakest_needed_prime.bit_length())
 
