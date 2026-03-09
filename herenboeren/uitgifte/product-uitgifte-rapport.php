@@ -4,202 +4,10 @@ session_start();
 
 // Inclusief configuratiebestand
 require_once 'product-config.php';
+require_once 'product-functions.php';
 
 // Maak of open de SQLite database
 $db = new SQLite3($dbFile);
-
-// Functie om alle uitgiftedata met transacties op te halen (gesorteerd van oud naar nieuw)
-function getUitgiftedataMetTransacties($db) {
-    $result = $db->query("
-        SELECT DISTINCT u.id, u.uitgiftedatum
-        FROM uitgiftedatum u
-        JOIN registraties r ON u.id = r.uitgiftedag
-        ORDER BY u.uitgiftedatum ASC
-    ");
-    $data = [];
-    while ($row = $result->fetchArray(SQLITE3_ASSOC)) {
-        $data[] = $row;
-    }
-    return $data;
-}
-
-// Functie om alle certificaten op te halen
-function getAlleCertificaten($db) {
-    $result = $db->query("SELECT certificaat FROM leden GROUP BY certificaat ORDER BY certificaat");
-    $certificaten = [];
-    while ($row = $result->fetchArray(SQLITE3_ASSOC)) {
-        $certificaten[] = $row['certificaat'];
-    }
-    return $certificaten;
-}
-
-// Functie om productinformatie per certificaat op te halen
-function getProductInfoPerCertificaat($db) {
-    $result = $db->query("
-        SELECT certificaat,
-               GROUP_CONCAT(naam || ' (' || monden || ')', ', ') as producten
-        FROM leden l
-        JOIN producten p ON l.product_id = p.id
-        GROUP BY certificaat
-    ");
-    $productInfo = [];
-    while ($row = $result->fetchArray(SQLITE3_ASSOC)) {
-        $productInfo[$row['certificaat']] = $row['producten'];
-    }
-    return $productInfo;
-}
-
-// Functie om op te halen welke certificaten zijn opgehaald op geselecteerde datums
-function getOpgehaaldeCertificatenPerDatum($db, $uitgiftedatumIds) {
-    if (empty($uitgiftedatumIds)) {
-        return [];
-    }
-
-    $placeholders = implode(',', array_fill(0, count($uitgiftedatumIds), '?'));
-    $query = "SELECT certificaat, uitgiftedag FROM registraties WHERE uitgiftedag IN ($placeholders)";
-
-    $stmt = $db->prepare($query);
-    foreach ($uitgiftedatumIds as $i => $id) {
-        $stmt->bindValue($i+1, $id, SQLITE3_INTEGER);
-    }
-
-    $result = $stmt->execute();
-    $opgehaaldeData = [];
-    while ($row = $result->fetchArray(SQLITE3_ASSOC)) {
-        $opgehaaldeData[$row['uitgiftedag']][] = $row['certificaat'];
-    }
-
-    // Zorg dat elke datum een entry heeft
-    foreach ($uitgiftedatumIds as $datumId) {
-        if (!isset($opgehaaldeData[$datumId])) {
-            $opgehaaldeData[$datumId] = [];
-        }
-    }
-
-    return $opgehaaldeData;
-}
-
-// Functie om het totaal aantal opgehaalde keren per certificaat te berekenen
-function getTotaalOpgehaaldPerCertificaat($db, $certificaten, $uitgiftedatumIds) {
-    if (empty($uitgiftedatumIds) || empty($certificaten)) {
-        return [];
-    }
-
-    $totaalPerCertificaat = [];
-
-    // Maak een lijst van placeholders voor de datums
-    $datumPlaceholders = implode(',', array_fill(0, count($uitgiftedatumIds), '?'));
-
-    foreach ($certificaten as $certificaat) {
-        $query = "SELECT COUNT(*) as totaal FROM registraties
-                  WHERE certificaat = ? AND uitgiftedag IN ($datumPlaceholders)";
-
-        $stmt = $db->prepare($query);
-        $stmt->bindValue(1, $certificaat, SQLITE3_INTEGER);
-
-        // Bind alle datum IDs
-        foreach ($uitgiftedatumIds as $i => $id) {
-            $stmt->bindValue($i+2, $id, SQLITE3_INTEGER);
-        }
-
-        $result = $stmt->execute();
-        $row = $result->fetchArray(SQLITE3_ASSOC);
-        $totaalPerCertificaat[$certificaat] = $row['totaal'];
-    }
-
-    return $totaalPerCertificaat;
-}
-
-// Functie om het totaal aantal opgehaalde certificaten per datum te berekenen
-function getTotaalOpgehaaldPerDatum($db, $uitgiftedatumIds) {
-    if (empty($uitgiftedatumIds)) {
-        return [];
-    }
-
-    $totaalPerDatum = [];
-    foreach ($uitgiftedatumIds as $datumId) {
-        $result = $db->query("SELECT COUNT(*) as totaal FROM registraties WHERE uitgiftedag = $datumId");
-        $row = $result->fetchArray(SQLITE3_ASSOC);
-        $totaalPerDatum[$datumId] = $row['totaal'];
-    }
-
-    return $totaalPerDatum;
-}
-
-// Functie om rapportgegevens op te halen voor een specifieke datum
-function getRapportGegevens($db, $uitgiftedatumId) {
-    // Haal basisinformatie over de uitgiftedatum
-    $result = $db->query("SELECT uitgiftedatum, starttijd, eindtijd FROM uitgiftedatum WHERE id = $uitgiftedatumId");
-    $uitgiftedatumInfo = $result->fetchArray(SQLITE3_ASSOC);
-
-    // Haal alle registraties voor deze datum
-    $result = $db->query("
-        SELECT r.certificaat, r.gebruiker, r.registratie_tijd, l.product_id, p.naam as product, l.monden
-        FROM registraties r
-        JOIN leden l ON r.certificaat = l.certificaat
-        JOIN producten p ON l.product_id = p.id
-        WHERE r.uitgiftedag = $uitgiftedatumId
-        ORDER BY r.registratie_tijd
-    ");
-    $registraties = [];
-    while ($row = $result->fetchArray(SQLITE3_ASSOC)) {
-        $registraties[] = $row;
-    }
-
-    // Haal statistieken voor deze datum
-    $result = $db->query("SELECT COUNT(*) as totalCertificaten FROM registraties WHERE uitgiftedag = $uitgiftedatumId");
-    $stats = $result->fetchArray(SQLITE3_ASSOC);
-    $totalCertificaten = $stats['totalCertificaten'];
-
-    $result = $db->query("
-        SELECT SUM(l.monden) as totalMonden
-        FROM registraties r
-        JOIN leden l ON r.certificaat = l.certificaat
-        WHERE r.uitgiftedag = $uitgiftedatumId
-    ");
-    $stats = $result->fetchArray(SQLITE3_ASSOC);
-    $totalMonden = $stats['totalMonden'] ?? 0;
-
-    // Haal certificaten die niet zijn opgehaald voor deze datum
-    $result = $db->query("
-        SELECT l.certificaat, p.naam as product, l.monden
-        FROM leden l
-        JOIN producten p ON l.product_id = p.id
-        WHERE l.certificaat NOT IN (
-            SELECT certificaat FROM registraties WHERE uitgiftedag = $uitgiftedatumId
-        )
-        ORDER BY l.certificaat
-    ");
-    $nietOpgehaaldeCertificaten = [];
-    while ($row = $result->fetchArray(SQLITE3_ASSOC)) {
-        $nietOpgehaaldeCertificaten[] = $row;
-    }
-
-    return [
-        'uitgiftedatumInfo' => $uitgiftedatumInfo,
-        'registraties' => $registraties,
-        'totalCertificaten' => $totalCertificaten,
-        'totalMonden' => $totalMonden,
-        'nietOpgehaaldeCertificaten' => $nietOpgehaaldeCertificaten
-    ];
-}
-
-// Functie om kleur te bepalen op basis van percentage
-function getKleurOpBasisVanPercentage($waarde, $max) {
-    if ($max == 0) return 'bg-gray-200';
-
-    $percentage = ($waarde / $max) * 100;
-
-    if ($percentage == 0) {
-        return 'bg-gray-200';
-    } elseif ($percentage < 33) {
-        return 'bg-red-200';
-    } elseif ($percentage < 66) {
-        return 'bg-yellow-200';
-    } else {
-        return 'bg-green-200';
-    }
-}
 
 // Haal alleen uitgiftedata met transacties op (gesorteerd van oud naar nieuw)
 $uitgiftedata = getUitgiftedataMetTransacties($db);
@@ -279,7 +87,16 @@ if (!isset($maxTotaal)) {
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Product Uitgifte Rapport</title>
     <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <script>
+        function deselecteerAlleDatums() {
+            const checkboxes = document.querySelectorAll('input[name="uitgiftedatum_ids[]"]');
+            checkboxes.forEach(checkbox => {
+                checkbox.checked = false;
+            });
+            return false; // Voorkom form submit
+        }
+
         function toggleSection(sectionId) {
             const section = document.getElementById(sectionId);
             const button = document.querySelector(`button[data-target="${sectionId}"]`);
@@ -433,6 +250,18 @@ if (!isset($maxTotaal)) {
     </style>
 </head>
 <body class="bg-gray-100 font-sans leading-normal tracking-normal">
+    <div class="container mx-auto px-4 py-12">
+        <div class="flex flex-col md:flex-row justify-between items-center">
+            <div class="mb-6 md:mb-0">
+                <h1 class="text-3xl font-bold text-gray-800">Uitgifte rapportage</h1>
+                <p class="text-gray-600">diverse rapporten over uitgifte registratie</p>
+            </div>
+            <div class="text-right">
+                <p class="text-gray-700"><i class="fas fa-user mr-2"></i>Ingelogd als: <span class="font-semibold"><?php echo htmlspecialchars(getGebruikersnaam()); ?></span></p>
+                <p class="text-sm text-gray-500"><?php echo date('d-m-Y H:i'); ?></p>
+            </div>
+        </div>
+    </div>
     <div class="container w-full mx-auto pt-10 pb-10">
         <div class="w-full px-4 text-xl text-gray-800 leading-normal">
             <div class="bg-white shadow-md rounded px-8 pt-6 pb-8 mb-4">
@@ -468,6 +297,11 @@ if (!isset($maxTotaal)) {
                         <button type="submit" name="selecteer_alles"
                                 class="bg-green-500 hover:bg-green-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline">
                             Selecteer Alle Data
+                        </button>
+                        <button type="button"
+                                class="bg-orange-500 hover:bg-orange-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline"
+                                onclick="deselecteerAlleDatums()">
+                            Deselecteer Alles
                         </button>
                         <button type="button"
                                 class="bg-gray-500 hover:bg-gray-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline"
@@ -515,6 +349,11 @@ if (!isset($maxTotaal)) {
                                             <th class="px-3 py-3 text-left text-xs font-medium text-gray-700 uppercase border">
                                                 Certificaat
                                             </th>
+                                            <?php if ($toonNamen): ?>
+                                                <th class="px-3 py-3 text-left text-xs font-medium text-gray-700 uppercase border">
+                                                    Naam
+                                                </th>
+                                            <?php endif; ?>
                                             <th class="px-3 py-3 text-center text-xs font-medium text-gray-700 uppercase border">
                                                 Totaal opgehaald
                                             </th>
@@ -544,6 +383,11 @@ if (!isset($maxTotaal)) {
                                             <td class="px-3 py-2 border text-sm font-bold text-gray-900">
                                                 Totaal per datum
                                             </td>
+                                            <?php if ($toonNamen): ?>
+                                                <td class="px-3 py-2 border text-sm font-bold text-gray-900">
+                                                    -
+                                                </td>
+                                            <?php endif; ?>
                                             <td class="px-3 py-2 border text-sm font-bold text-gray-900">
                                                 -
                                             </td>
@@ -556,19 +400,25 @@ if (!isset($maxTotaal)) {
 
                                         <!-- Certificaatrijen -->
                                         <?php foreach ($alleCertificaten as $certificaat):
-                                            $totaalOpgehaald = $totaalPerCertificaat[$certificaat] ?? 0;
+                                            $totaalOpgehaald = $totaalPerCertificaat[$certificaat['leden_id']] ?? 0;
+                                            $certInfo = $productInfoPerCertificaat[$certificaat['leden_id']] ?? [];
                                         ?>
                                             <tr>
                                                 <td class="px-3 py-2 border text-sm font-medium text-gray-900">
                                                     <div class="tooltip">
-                                                        <?php echo $certificaat; ?>
-                                                        <?php if (isset($productInfoPerCertificaat[$certificaat])): ?>
+                                                        <?php echo $certificaat['certificaat']; ?>
+                                                        <?php if (isset($certInfo['producten'])): ?>
                                                             <span class="tooltiptext certificaat-info">
-                                                                <?php echo str_replace(',', '<br>', $productInfoPerCertificaat[$certificaat]); ?>
+                                                                <?php echo str_replace(',', '<br>', $certInfo['producten']); ?>
                                                             </span>
                                                         <?php endif; ?>
                                                     </div>
                                                 </td>
+                                                <?php if ($toonNamen): ?>
+                                                    <td class="px-3 py-2 border text-sm text-gray-900">
+                                                        <?php echo $certInfo['naam'] ?? '-'; ?>
+                                                    </td>
+                                                <?php endif; ?>
                                                 <td class="px-3 py-2 border">
                                                     <div class="totaal-cell <?php echo getKleurOpBasisVanPercentage($totaalOpgehaald, $maxTotaal); ?>">
                                                         <?php echo $totaalOpgehaald; ?>
@@ -576,8 +426,8 @@ if (!isset($maxTotaal)) {
                                                 </td>
                                                 <?php foreach ($geselecteerdeUitgiftedatumIds as $datumId): ?>
                                                     <td class="matrix-cell border
-                                                        <?php echo in_array($certificaat, $opgehaaldeData[$datumId] ?? []) ? 'opgehaald' : 'niet-opgehaald'; ?>">
-                                                        <?php echo in_array($certificaat, $opgehaaldeData[$datumId] ?? []) ? '✓' : ''; ?>
+                                                        <?php echo in_array($certificaat['leden_id'], $opgehaaldeData[$datumId] ?? []) ? 'opgehaald' : 'niet-opgehaald'; ?>">
+                                                        <?php echo in_array($certificaat['leden_id'], $opgehaaldeData[$datumId] ?? []) ? '✓' : ''; ?>
                                                     </td>
                                                 <?php endforeach; ?>
                                             </tr>
@@ -631,6 +481,9 @@ if (!isset($maxTotaal)) {
                                                 <tr>
                                                     <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Tijdstip</th>
                                                     <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Certificaat</th>
+                                                    <?php if ($toonNamen): ?>
+                                                        <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Naam</th>
+                                                    <?php endif; ?>
                                                     <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Product</th>
                                                     <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Monden</th>
                                                     <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Geregistreerd door</th>
@@ -645,6 +498,11 @@ if (!isset($maxTotaal)) {
                                                         <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
                                                             <?php echo $registratie['certificaat']; ?>
                                                         </td>
+                                                        <?php if ($toonNamen): ?>
+                                                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                                                                <?php echo $registratie['lid_naam'] ?? '-'; ?>
+                                                            </td>
+                                                        <?php endif; ?>
                                                         <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                                                             <?php echo $registratie['product']; ?>
                                                         </td>
@@ -677,6 +535,9 @@ if (!isset($maxTotaal)) {
                                             <thead class="bg-gray-50">
                                                 <tr>
                                                     <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Certificaat</th>
+                                                    <?php if ($toonNamen): ?>
+                                                        <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Naam</th>
+                                                    <?php endif; ?>
                                                     <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Product</th>
                                                     <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Monden</th>
                                                 </tr>
@@ -687,6 +548,11 @@ if (!isset($maxTotaal)) {
                                                         <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
                                                             <?php echo $certificaat['certificaat']; ?>
                                                         </td>
+                                                        <?php if ($toonNamen): ?>
+                                                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                                                                <?php echo $certificaat['lid_naam'] ?? '-'; ?>
+                                                            </td>
+                                                        <?php endif; ?>
                                                         <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                                                             <?php echo $certificaat['product']; ?>
                                                         </td>

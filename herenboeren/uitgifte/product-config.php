@@ -16,5 +16,13 @@ $sectionGreenBgColor = 'bg-green-50'; // Tailwind class voor achtergrond van "Op
 
 // Optie om totale kolom te tonen
 $showTotalColumn = true; // true of false
+
+// Optie om namen te tonen
+$toonNamen = true; // Zet op false om namen niet te tonen
+
+// Standaard tijden voor uitgiftedagen
+$defaultStartTijd = '09:00';  // Standaard starttijd
+$defaultEindTijd = '14:00';   // Standaard eindtijd
+
 ?>
 
