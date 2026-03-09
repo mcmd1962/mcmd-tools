@@ -24,9 +24,10 @@ function invoer_registraties() {
    for i in $(seq 1 7 35); do
       uitgiftedag=$(($uitgiftedag + 1))
       DAY=$(gdate -d "$i days ago" "+%Y-%m-%d 12:12:12")
+      DAY_CHANCE=$(($RANDOM % 50 + 55))
       for certificaat in $(seq 1 1 $AANTAL_CERTIFICATEN); do
-         if [[ $(($RANDOM % 100)) -lt 90 ]]; then
-            echo "INSERT INTO registraties (certificaat, gebruiker, registratie_tijd,uitgiftedag) VALUES($certificaat,'$gebruiker','$DAY',$uitgiftedag);"
+         if [[ $(($RANDOM % 100)) -lt $DAY_CHANCE ]]; then
+            echo "INSERT INTO registraties (leden_id, gebruiker, registratie_tijd,uitgiftedag) VALUES($certificaat,'$gebruiker','$DAY',$uitgiftedag);"
          fi
       done
    done
@@ -55,7 +56,7 @@ function invoer_leden() {
    for certificaat in $(seq 1 1 $AANTAL_CERTIFICATEN); do
       product_id=$((1 + $RANDOM % 2))
       monden=$((1 + $RANDOM % 6))
-      echo "insert into leden(certificaat,product_id,monden) values ($certificaat,$product_id,$monden);"
+      echo "insert into leden(certificaat,product_id,naam,monden) values ($certificaat,$product_id,'gebruiker-$certificaat',$monden);"
    done
 }
 

@@ -99,7 +99,6 @@ function getKleurOpBasisVanPercentage($waarde, $max) {
 
 // Functie om de laatste registratie van de huidige gebruiker op te halen
 function getLaatsteRegistratie($db) {
-    $gebruiker = getGebruikersnaam();
     $uitgiftedag = getHuidigeUitgiftedag($db);
 
     $stmt = $db->prepare("
@@ -116,7 +115,7 @@ function getLaatsteRegistratie($db) {
     ");
 
     $stmt->bindValue(':uitgiftedag_id', $uitgiftedag['id'], SQLITE3_INTEGER);
-    $stmt->bindValue(':gebruiker', $gebruiker, SQLITE3_TEXT);
+    $stmt->bindValue(':gebruiker', getGebruikersnaam(), SQLITE3_TEXT);
 
     $result = $stmt->execute();
     return $result->fetchArray(SQLITE3_ASSOC);
@@ -823,7 +822,6 @@ function registreerCertificaat($db, $certificaat) {
 // Functie om de laatste registratie te verwijderen
 function verwijderLaatsteRegistratie($db) {
     $uitgiftedag = getHuidigeUitgiftedag($db);
-    $gebruiker = getGebruikersnaam();
 
     $stmt = $db->prepare("
         SELECT id, leden_id, gebruiker FROM registraties
@@ -834,7 +832,7 @@ function verwijderLaatsteRegistratie($db) {
         )
     ");
     $stmt->bindValue(':uitgiftedag', $uitgiftedag['id'], SQLITE3_INTEGER);
-    $stmt->bindValue(':gebruiker', $gebruiker, SQLITE3_TEXT);
+    $stmt->bindValue(':gebruiker', getGebruikersnaam(), SQLITE3_TEXT);
     $result = $stmt->execute();
     $row = $result->fetchArray(SQLITE3_ASSOC);
 

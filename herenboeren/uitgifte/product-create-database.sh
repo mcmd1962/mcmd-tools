@@ -8,9 +8,9 @@ rm -f "$DB_FILE"
 
 # Maak nieuwe database en tabellen
 sqlite3 "$DB_FILE" <<EOF
--- Tabel voor producten
+-- Tabel voor producten (met product_id als primary key)
 CREATE TABLE IF NOT EXISTS producten (
-    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    product_id INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL UNIQUE,
     naam TEXT NOT NULL UNIQUE
 );
 
@@ -24,23 +24,24 @@ CREATE TABLE IF NOT EXISTS uitgiftedatum (
 
 -- Tabel voor leden
 CREATE TABLE IF NOT EXISTS leden (
-    certificaat INTEGER PRIMARY KEY,
+    leden_id INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL UNIQUE,
+    certificaat INTEGER NOT NULL UNIQUE,
     product_id INTEGER NOT NULL,
     monden INTEGER NOT NULL,
-    FOREIGN KEY(product_id) REFERENCES producten(id)
+    naam TEXT,
+    FOREIGN KEY(product_id) REFERENCES producten(product_id)
 );
 
 -- Tabel voor registraties
 CREATE TABLE IF NOT EXISTS registraties (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
-    certificaat INTEGER NOT NULL,
+    leden_id INTEGER NOT NULL,
     gebruiker TEXT NOT NULL,
     registratie_tijd TEXT NOT NULL,
     uitgiftedag INTEGER NOT NULL,
-    FOREIGN KEY(certificaat) REFERENCES leden(certificaat),
+    FOREIGN KEY(leden_id) REFERENCES leden(leden_id),
     FOREIGN KEY(uitgiftedag) REFERENCES uitgiftedatum(id)
 );
-
 EOF
 
 echo "Database $DB_FILE is aangemaakt."

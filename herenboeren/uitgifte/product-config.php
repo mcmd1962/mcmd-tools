@@ -4,6 +4,7 @@
 // Bestand locaties:
 $dbFile = 'rorik-dev-product-uitgifte.db';
 $logFile = 'rorik-dev-product-uitgifte.log';
+$indexFile = 'product-index.php';
 
 // Font grootte voor invoerveld
 $inputFontSize = 'text-base'; // Tailwind class (default: text-base)

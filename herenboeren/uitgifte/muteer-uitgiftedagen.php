@@ -69,6 +69,7 @@ if (isset($_GET['edit']) && is_numeric($_GET['edit'])) {
     $result = $stmt->execute();
     $editUitgiftedag = $result->fetchArray(SQLITE3_ASSOC);
 }
+$paginaTitel = "Uitgiftedagen Beheer";
 ?>
 
 <!DOCTYPE html>
@@ -76,8 +77,9 @@ if (isset($_GET['edit']) && is_numeric($_GET['edit'])) {
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Uitgiftedagen Beheer</title>
+    <title><?php echo $paginaTitel; ?></title>
     <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <style>
         .message {
             padding: 15px;
@@ -103,11 +105,32 @@ if (isset($_GET['edit']) && is_numeric($_GET['edit'])) {
     </style>
 </head>
 <body class="bg-gray-100 font-sans leading-normal tracking-normal">
-    <div class="container w-full mx-auto pt-10 pb-10">
+    <div class="container w-full mx-auto pt-10 pb-1">
+        <div class="w-full px-4 text-xl text-gray-800 leading-normal">
+            <div class="bg-white shadow-md rounded px-8 pt-6 pb-4 mb-2">
+
+                <!-- Terugknop en gebruikersinformatie -->
+                <div class="flex flex-col md:flex-row justify-between items-center mb-6">
+                    <div class="w-full md:w-auto mb-4 md:mb-0">
+                      <a href="<?php echo $indexFile; ?>" class="inline-block bg-gray-200 hover:bg-gray-300 text-gray-800 font-bold py-2 px-4 rounded mb-4 md:mb-0 focus:outline-none focus:shadow-outline">
+                        <i class="fas fa-arrow-left mr-2"></i>Terug naar Overzicht
+                      </a>
+                </div>
+
+                <div class="w-full md:w-auto text-center md:text-right">
+                    <h1 class="text-2xl font-bold mb-2"><?php echo $paginaTitel; ?></h1>
+                    <p class="text-gray-700"><i class="fas fa-user mr-2"></i>Ingelogd als: <span class="font-semibold"><?php echo htmlspecialchars(getGebruikersnaam()); ?></span></p>
+                    <p class="text-sm text-gray-500"><?php echo date('d-m-Y H:i'); ?></p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="container w-full mx-auto pt-2">
+
+    <div class="container w-full mx-auto pt-1 pb-10">
         <div class="w-full px-4 text-xl text-gray-800 leading-normal">
             <div class="bg-white shadow-md rounded px-8 pt-6 pb-8 mb-4">
-                <h1 class="text-2xl font-bold mb-6">Uitgiftedagen Beheer</h1>
-
                 <!-- Berichten weergave -->
                 <?php if (!empty($message)): ?>
                     <div class="message <?php echo $messageType; ?>">
