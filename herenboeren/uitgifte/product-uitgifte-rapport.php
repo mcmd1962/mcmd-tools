@@ -55,8 +55,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 $rapportGegevens[$datumId] = getRapportGegevens($db, $datumId);
             }
         }
-    }
-    elseif (isset($_POST['selecteer_alles'])) {
+    } elseif (isset($_POST['selecteer_alles'])) {
         $geselecteerdeUitgiftedatumIds = array_column($uitgiftedata, 'id');
         $opgehaaldeData = getOpgehaaldeCertificatenPerDatum($db, $geselecteerdeUitgiftedatumIds);
         $productInfoPerCertificaat = getProductInfoPerCertificaat($db);
@@ -285,7 +284,7 @@ $paginaTitel = "Product Uitgifte Rapport";
                             Selecteer uitgiftedata voor rapport (van oud naar nieuw, alleen met transacties)
                         </label>
                         <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-2 mb-4 max-h-64 overflow-y-auto border p-2 rounded">
-                            <?php foreach ($uitgiftedata as $datum):
+                            <?php foreach ($uitgiftedata as $datum) :
                                 $formattedDate = date('d-m-Y', strtotime($datum['uitgiftedatum']));
                             ?>
                                 <div class="flex items-center">
@@ -323,7 +322,7 @@ $paginaTitel = "Product Uitgifte Rapport";
                 </form>
 
                 <!-- Legenda -->
-                <?php if (!empty($opgehaaldeData)): ?>
+                <?php if (!empty($opgehaaldeData)) : ?>
                     <div class="mb-4 p-2 bg-gray-100 rounded no-print">
                         <div class="flex items-center mb-2">
                             <span class="inline-block w-4 h-4 bg-green-200 mr-2 align-middle"></span> Certificaat opgehaald &
@@ -340,7 +339,7 @@ $paginaTitel = "Product Uitgifte Rapport";
                 <?php endif; ?>
 
                 <!-- Matrix rapport -->
-                <?php if (!empty($opgehaaldeData)): ?>
+                <?php if (!empty($opgehaaldeData)) : ?>
                     <!-- Matrix overzicht -->
                     <div class="mb-6">
                         <div class="flex justify-between items-center mb-2">
@@ -360,7 +359,7 @@ $paginaTitel = "Product Uitgifte Rapport";
                                             <th class="px-3 py-3 text-left text-xs font-medium text-gray-700 uppercase border">
                                                 Certificaat
                                             </th>
-                                            <?php if ($toonNamen): ?>
+                                            <?php if ($toonNamen) : ?>
                                                 <th class="px-3 py-3 text-left text-xs font-medium text-gray-700 uppercase border">
                                                     Naam
                                                 </th>
@@ -370,7 +369,7 @@ $paginaTitel = "Product Uitgifte Rapport";
                                             </th>
                                             <?php
                                             // Sorteer de geselecteerde datums van oud naar nieuw voor weergave
-                                            usort($geselecteerdeUitgiftedatumIds, function($a, $b) use ($uitgiftedata) {
+                                            usort($geselecteerdeUitgiftedatumIds, function ($a, $b) use ($uitgiftedata) {
                                                 $datumA = array_filter($uitgiftedata, fn($d) => $d['id'] == $a);
                                                 $datumB = array_filter($uitgiftedata, fn($d) => $d['id'] == $b);
                                                 $datumA = reset($datumA);
@@ -378,7 +377,7 @@ $paginaTitel = "Product Uitgifte Rapport";
                                                 return strtotime($datumA['uitgiftedatum']) - strtotime($datumB['uitgiftedatum']);
                                             });
 
-                                            foreach ($geselecteerdeUitgiftedatumIds as $datumId):
+                                            foreach ($geselecteerdeUitgiftedatumIds as $datumId) :
                                                 $datumInfo = array_filter($uitgiftedata, fn($d) => $d['id'] == $datumId);
                                                 $datumInfo = reset($datumInfo);
                                             ?>
@@ -394,7 +393,7 @@ $paginaTitel = "Product Uitgifte Rapport";
                                             <td class="px-3 py-2 border text-sm font-bold text-gray-900">
                                                 Totaal per datum
                                             </td>
-                                            <?php if ($toonNamen): ?>
+                                            <?php if ($toonNamen) : ?>
                                                 <td class="px-3 py-2 border text-sm font-bold text-gray-900">
                                                     -
                                                 </td>
@@ -402,7 +401,7 @@ $paginaTitel = "Product Uitgifte Rapport";
                                             <td class="px-3 py-2 border text-sm font-bold text-gray-900">
                                                 -
                                             </td>
-                                            <?php foreach ($geselecteerdeUitgiftedatumIds as $datumId): ?>
+                                            <?php foreach ($geselecteerdeUitgiftedatumIds as $datumId) : ?>
                                                 <td class="px-3 py-2 border text-sm font-bold text-gray-900">
                                                     <?php echo $totaalPerDatum[$datumId] ?? 0; ?>
                                                 </td>
@@ -410,7 +409,7 @@ $paginaTitel = "Product Uitgifte Rapport";
                                         </tr>
 
                                         <!-- Certificaatrijen -->
-                                        <?php foreach ($alleCertificaten as $certificaat):
+                                        <?php foreach ($alleCertificaten as $certificaat) :
                                             $totaalOpgehaald = $totaalPerCertificaat[$certificaat['leden_id']] ?? 0;
                                             $certInfo = $productInfoPerCertificaat[$certificaat['leden_id']] ?? [];
                                         ?>
@@ -418,14 +417,14 @@ $paginaTitel = "Product Uitgifte Rapport";
                                                 <td class="px-3 py-2 border text-sm font-medium text-gray-900">
                                                     <div class="tooltip">
                                                         <?php echo $certificaat['certificaat']; ?>
-                                                        <?php if (isset($certInfo['producten'])): ?>
+                                                        <?php if (isset($certInfo['producten'])) : ?>
                                                             <span class="tooltiptext certificaat-info">
                                                                 <?php echo str_replace(',', '<br>', $certInfo['producten']); ?>
                                                             </span>
                                                         <?php endif; ?>
                                                     </div>
                                                 </td>
-                                                <?php if ($toonNamen): ?>
+                                                <?php if ($toonNamen) : ?>
                                                     <td class="px-3 py-2 border text-sm text-gray-900">
                                                         <?php echo $certInfo['naam'] ?? '-'; ?>
                                                     </td>
@@ -435,7 +434,7 @@ $paginaTitel = "Product Uitgifte Rapport";
                                                         <?php echo $totaalOpgehaald; ?>
                                                     </div>
                                                 </td>
-                                                <?php foreach ($geselecteerdeUitgiftedatumIds as $datumId): ?>
+                                                <?php foreach ($geselecteerdeUitgiftedatumIds as $datumId) : ?>
                                                     <td class="matrix-cell border
                                                         <?php echo in_array($certificaat['leden_id'], $opgehaaldeData[$datumId] ?? []) ? 'opgehaald' : 'niet-opgehaald'; ?>">
                                                         <?php echo in_array($certificaat['leden_id'], $opgehaaldeData[$datumId] ?? []) ? '✓' : ''; ?>
@@ -450,7 +449,7 @@ $paginaTitel = "Product Uitgifte Rapport";
                     </div>
 
                     <!-- Gedetailleerde rapporten per datum -->
-                    <?php foreach ($rapportGegevens as $datumId => $gegevens): ?>
+                    <?php foreach ($rapportGegevens as $datumId => $gegevens) : ?>
                         <div class="bg-white shadow-md rounded px-8 pt-6 pb-8 mb-4">
                             <div class="flex justify-between items-center mb-4 border-b pb-2">
                                 <h2 class="text-xl font-bold">
@@ -492,7 +491,7 @@ $paginaTitel = "Product Uitgifte Rapport";
                                                 <tr>
                                                     <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Tijdstip</th>
                                                     <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Certificaat</th>
-                                                    <?php if ($toonNamen): ?>
+                                                    <?php if ($toonNamen) : ?>
                                                         <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Naam</th>
                                                     <?php endif; ?>
                                                     <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Product</th>
@@ -501,7 +500,7 @@ $paginaTitel = "Product Uitgifte Rapport";
                                                 </tr>
                                             </thead>
                                             <tbody class="bg-white divide-y divide-gray-200">
-                                                <?php foreach ($gegevens['registraties'] as $registratie): ?>
+                                                <?php foreach ($gegevens['registraties'] as $registratie) : ?>
                                                     <tr>
                                                         <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                                                             <?php echo date('H:i:s', strtotime($registratie['registratie_tijd'])); ?>
@@ -509,7 +508,7 @@ $paginaTitel = "Product Uitgifte Rapport";
                                                         <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
                                                             <?php echo $registratie['certificaat']; ?>
                                                         </td>
-                                                        <?php if ($toonNamen): ?>
+                                                        <?php if ($toonNamen) : ?>
                                                             <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                                                                 <?php echo $registratie['lid_naam'] ?? '-'; ?>
                                                             </td>
@@ -546,7 +545,7 @@ $paginaTitel = "Product Uitgifte Rapport";
                                             <thead class="bg-gray-50">
                                                 <tr>
                                                     <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Certificaat</th>
-                                                    <?php if ($toonNamen): ?>
+                                                    <?php if ($toonNamen) : ?>
                                                         <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Naam</th>
                                                     <?php endif; ?>
                                                     <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Product</th>
@@ -554,12 +553,12 @@ $paginaTitel = "Product Uitgifte Rapport";
                                                 </tr>
                                             </thead>
                                             <tbody class="bg-white divide-y divide-gray-200">
-                                                <?php foreach ($gegevens['nietOpgehaaldeCertificaten'] as $certificaat): ?>
+                                                <?php foreach ($gegevens['nietOpgehaaldeCertificaten'] as $certificaat) : ?>
                                                     <tr>
                                                         <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
                                                             <?php echo $certificaat['certificaat']; ?>
                                                         </td>
-                                                        <?php if ($toonNamen): ?>
+                                                        <?php if ($toonNamen) : ?>
                                                             <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                                                                 <?php echo $certificaat['lid_naam'] ?? '-'; ?>
                                                             </td>
@@ -579,7 +578,7 @@ $paginaTitel = "Product Uitgifte Rapport";
                             </div>
                         </div>
                     <?php endforeach; ?>
-                <?php else: ?>
+                <?php else : ?>
                     <div class="bg-yellow-100 border border-yellow-400 text-yellow-700 px-4 py-3 rounded relative" role="alert">
                         <strong class="font-bold">Geen gegevens beschikbaar</strong>
                         <span class="block sm:inline">Selecteer een of meerdere uitgiftedata om het rapport te genereren.</span>

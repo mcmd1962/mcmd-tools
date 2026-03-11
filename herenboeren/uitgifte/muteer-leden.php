@@ -37,8 +37,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 $message = $result['message'];
                 $messageType = 'error';
             }
-        }
-        elseif ($action === 'wijzigen') {
+        } elseif ($action === 'wijzigen') {
             $leden_id = $_POST['leden_id'];
             $certificaat = $_POST['certificaat'];
             $product_id = $_POST['product_id'];
@@ -55,8 +54,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 $message = $result['message'];
                 $messageType = 'error';
             }
-        }
-        elseif ($action === 'verwijderen') {
+        } elseif ($action === 'verwijderen') {
             $leden_id = $_POST['leden_id'];
 
             $result = verwijderLid($db, $leden_id);
@@ -153,7 +151,7 @@ $paginaTitel = "Leden Beheer";
             <div class="bg-white shadow-md rounded px-8 pt-6 pb-8 mb-4">
 
                 <!-- Berichten weergave -->
-                <?php if (!empty($message)): ?>
+                <?php if (!empty($message)) : ?>
                     <div class="message <?php echo $messageType; ?>">
                         <?php echo $message; ?>
                     </div>
@@ -168,7 +166,7 @@ $paginaTitel = "Leden Beheer";
                     <form method="POST" action="">
                         <input type="hidden" name="action" value="<?php echo $editLid ? 'wijzigen' : 'toevoegen'; ?>">
 
-                        <?php if ($editLid): ?>
+                        <?php if ($editLid) : ?>
                             <input type="hidden" name="leden_id" value="<?php echo $editLid['leden_id']; ?>">
                         <?php endif; ?>
 
@@ -189,7 +187,7 @@ $paginaTitel = "Leden Beheer";
                                 <select id="product_id" name="product_id"
                                         class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline" required>
                                     <option value="">Selecteer een product</option>
-                                    <?php foreach ($producten as $product): ?>
+                                    <?php foreach ($producten as $product) : ?>
                                         <option value="<?php echo $product['product_id']; ?>"
                                             <?php echo ($editLid && $editLid['product_id'] == $product['product_id']) ? 'selected' : ''; ?>>
                                             <?php echo $product['naam']; ?>
@@ -224,11 +222,11 @@ $paginaTitel = "Leden Beheer";
                                 <?php echo $editLid ? 'Wijzigen' : 'Toevoegen'; ?>
                             </button>
 
-                            <?php if ($editLid): ?>
+                            <?php if ($editLid) : ?>
                                 <a href="muteer-leden.php" class="inline-block align-baseline font-bold text-sm text-blue-500 hover:text-blue-800">
                                     Annuleren
                                 </a>
-                            <?php else: ?>
+                            <?php else : ?>
                                 <button type="reset" class="bg-gray-500 hover:bg-gray-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline">
                                     Reset
                                 </button>
@@ -253,15 +251,17 @@ $paginaTitel = "Leden Beheer";
                                 </tr>
                             </thead>
                             <tbody>
-                                <?php if (empty($leden)): ?>
+                                <?php if (empty($leden)) : ?>
                                     <tr>
                                         <td colspan="5" class="py-2 px-4 border text-center">Geen leden gevonden</td>
                                     </tr>
-                                <?php else: ?>
-                                    <?php foreach ($leden as $lid): ?>
+                                <?php else : ?>
+                                    <?php foreach ($leden as $lid) : ?>
                                         <tr class="<?php echo ($lid['certificaat'] % 2 == 0) ? 'bg-gray-50' : ''; ?>">
-                                            <td class="py-2 px-4 border"><?php echo $lid['certificaat']; ?></td>
-                                            <td class="py-2 px-4 border"><?php echo !empty($lid['naam']) ? $lid['naam'] : '-'; ?></td>
+                                            <td class="py-2 px-4 border">
+                                              <?php echo $lid['certificaat']; ?></td>
+                                            <td class="py-2 px-4 border">
+                                              <?php echo !empty($lid['naam']) ? $lid['naam'] : '-'; ?></td>
                                             <td class="py-2 px-4 border"><?php echo $lid['product_naam']; ?></td>
                                             <td class="py-2 px-4 border"><?php echo $lid['monden']; ?></td>
                                             <td class="py-2 px-4 border">

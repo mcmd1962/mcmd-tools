@@ -1,12 +1,16 @@
 <?php
-// Start de sessie
-session_start();
+
+// Start de sessie en laad configuratie als nog niet gedaan
+if (session_status() === PHP_SESSION_NONE) {
+    session_start();
+}
 
 // Inclusief configuratiebestand
 require_once 'product-config.php';
 
 // Functie om te controleren of een certificaat bestaat
-function certificaatBestaat($db, $certificaat) {
+function certificaatBestaat($db, $certificaat)
+{
     $stmt = $db->prepare("SELECT certificaat FROM leden WHERE certificaat = :certificaat");
     $stmt->bindValue(':certificaat', $certificaat, SQLITE3_INTEGER);
     $result = $stmt->execute();
@@ -16,7 +20,8 @@ function certificaatBestaat($db, $certificaat) {
 }
 
 // Functie om alle certificaten op te halen
-function getAlleCertificaten($db) {
+function getAlleCertificaten($db)
+{
     $result = $db->query("SELECT l.leden_id, l.certificaat FROM leden l GROUP BY l.leden_id ORDER BY l.certificaat");
     $certificaten = [];
     while ($row = $result->fetchArray(SQLITE3_ASSOC)) {
@@ -26,22 +31,23 @@ function getAlleCertificaten($db) {
 }
 
 // Functie om de gebruikersnaam op te halen
-function getGebruikersnaam() {
+function getGebruikersnaam()
+{
     $username = '';
     if (isset($_SERVER['HTTP_AUTHORIZATION']) || isset($_SERVER['REDIRECT_HTTP_AUTHORIZATION'])) {
         $authorization_header = '';
         if (isset($_SERVER['HTTP_AUTHORIZATION']) && !empty($_SERVER['HTTP_AUTHORIZATION'])) {
             $authorization_header = $_SERVER['HTTP_AUTHORIZATION'];
-        }
-        elseif (isset($_SERVER['REDIRECT_HTTP_AUTHORIZATION']) && !empty($_SERVER['REDIRECT_HTTP_AUTHORIZATION'])) {
+    }
+    elseif (isset($_SERVER['REDIRECT_HTTP_AUTHORIZATION']) && !empty($_SERVER['REDIRECT_HTTP_AUTHORIZATION']))
+    {
             $authorization_header = $_SERVER['REDIRECT_HTTP_AUTHORIZATION'];
         }
         if (!empty($authorization_header)) {
             list($username_temp, $userpass_temp) = explode(':', base64_decode(substr($authorization_header, 6)));
             $username = $username_temp;
         }
-    }
-    elseif (isset($_SERVER['REDIRECT_REMOTE_USER'])) {
+    } elseif (isset($_SERVER['REDIRECT_REMOTE_USER'])) {
         $username = $_SERVER['REDIRECT_REMOTE_USER'];
     }
     elseif (isset($_SERVER['REMOTE_USER'])) {
@@ -358,7 +364,7 @@ function getProductStatistieken($db) {
     $totaalPercentageOpgehaaldMonden = $totaalMonden > 0 ? round(($totaalOpgehaaldMonden / $totaalMonden) * 100, 1) : 0;
     $totaalPercentageNietOpgehaaldMonden = $totaalMonden > 0 ? round(($totaalNietOpgehaaldMonden / $totaalMonden) * 100, 1) : 0;
 
-    $statistieken['totaal'] = [
+    $statistieken['Totaal'] = [
         'totaal_certificaten' => $totaalCertificaten,
         'niet_opgehaald_certificaten' => $totaalNietOpgehaaldCertificaten,
         'opgehaald_certificaten' => $totaalOpgehaaldCertificaten,
